@@ -9,7 +9,7 @@ def main():
     """2022년 10월부터 2025년 4월까지의 전체 청년정책 데이터를 JSON으로 수집"""
 
     # API 키 설정
-    API_KEY = "610bb6ce-9ba2-4089-a4c7-0c25de78159e"
+    API_KEY = "APIkey"
 
     # API 클래스 인스턴스 생성
     api = YouthPolicyAPI(API_KEY)
