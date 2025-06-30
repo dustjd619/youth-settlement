@@ -1,1 +1,7 @@
+# 환경변수 파일 (API 키 등 민감한 정보)
+.env
+
+# Python
 __pycache__/
+
+.DS_Store
