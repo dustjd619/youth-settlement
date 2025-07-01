@@ -83,7 +83,7 @@ class YouthPolicyEvaluationSystemV2:
 
     def _load_youth_population_data(self):
         """청년인구 데이터를 로드합니다."""
-        file_path = self.base_path / "data/policy/청년인구/지자체별_청년인구비_통합.csv"
+        file_path = self.base_path / "data/policy/청년인구/시군구_청년비율_2023.csv"
         self.youth_population_data = pd.read_csv(file_path, encoding="utf-8-sig")
         print(f"✓ 청년인구 데이터 로드: {len(self.youth_population_data)}개 지역")
 
@@ -523,14 +523,14 @@ class YouthPolicyEvaluationSystemV2:
         # CSV 저장 (순위 포함)
         csv_file = (
             self.base_path
-            / "policy_evaluation/evaluation_results_index/evaluation-3/전국_청년정책_종합평가결과_v6.csv"
+            / "policy_evaluation/evaluation_results_index/evaluation-3/전국_청년정책_종합평가결과_v7.csv"
         )
         df.to_csv(csv_file, index=False, encoding="utf-8-sig")
 
         # JSON 저장 (상세 분석용)
         json_file = (
             self.base_path
-            / "policy_evaluation/evaluation_results_index/evaluation-3/전국_청년정책_분석결과_v6.json"
+            / "policy_evaluation/evaluation_results_index/evaluation-3/전국_청년정책_분석결과_v7.json"
         )
         detailed_results = df.to_dict("records")
 
