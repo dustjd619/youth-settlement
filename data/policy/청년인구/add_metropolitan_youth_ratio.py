@@ -10,7 +10,7 @@ class MetropolitanYouthRatioCalculator:
 
         # 광역자치단체 목록
         self.metropolitan_areas = [
-            "강원특별자치도",
+            "강원도",
             "경기도",
             "경상남도",
             "경상북도",
@@ -23,7 +23,7 @@ class MetropolitanYouthRatioCalculator:
             "울산광역시",
             "인천광역시",
             "전라남도",
-            "전북특별자치도",  # 데이터에서는 "전라북도"로 되어있음
+            "전라북도",  # 데이터에서는 "전라북도"로 되어있음
             "제주특별자치도",
             "충청남도",
             "충청북도",
@@ -40,7 +40,7 @@ class MetropolitanYouthRatioCalculator:
 
         # 매핑 규칙
         if region_name.startswith("강원"):
-            return "강원특별자치도"
+            return "강원도"
         elif region_name.startswith("경기도"):
             return "경기도"
         elif region_name.startswith("경상남도"):
@@ -66,7 +66,7 @@ class MetropolitanYouthRatioCalculator:
         elif region_name.startswith("전라남도"):
             return "전라남도"
         elif region_name.startswith("전라북도"):
-            return "전북특별자치도"
+            return "전라북도"
         elif region_name.startswith("제주특별자치도"):
             return "제주특별자치도"
         elif region_name.startswith("충청남도"):
