@@ -23,7 +23,7 @@ class YouthPolicyResultAnalysis:
         self.df = None
         self.numerical_cols = []
 
-    def load_data(self, file_path="전국_청년정책_종합평가결과_v6.csv"):
+    def load_data(self, file_path="전국_청년정책_종합평가결과_v7.csv"):
         """데이터 로드"""
         self.df = pd.read_csv(file_path, encoding="utf-8-sig")
 

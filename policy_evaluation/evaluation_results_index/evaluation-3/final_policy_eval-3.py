@@ -9,7 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import stats # Z-score 정규화에 사용
+from scipy import stats  # Z-score 정규화에 사용
 
 
 class YouthPolicyEvaluationSystemV2:
@@ -18,7 +18,7 @@ class YouthPolicyEvaluationSystemV2:
 
         # 광역자치단체 목록 정의
         self.metropolitan_areas = {
-            "강원특별자치도",
+            "강원도",
             "경기도",
             "경상남도",
             "경상북도",
@@ -43,7 +43,6 @@ class YouthPolicyEvaluationSystemV2:
         self.finance_autonomy_data = None
         self.metropolitan_budget_data = None
         self.basic_budget_data = None
-        
 
     def load_all_data(self):
         """모든 필요한 데이터를 로드합니다."""
@@ -159,27 +158,35 @@ class YouthPolicyEvaluationSystemV2:
 
     def get_youth_population(self, region_name):
         """특정 지역의 청년 인구수(절대값)를 조회합니다."""
-        col_name = "청년인구" # 제공해주신 컬럼명으로 수정
-        exact_match = self.youth_population_data[self.youth_population_data["지자체명"] == region_name]
+        col_name = "청년인구"  # 제공해주신 컬럼명으로 수정
+        exact_match = self.youth_population_data[
+            self.youth_population_data["지자체명"] == region_name
+        ]
         if len(exact_match) > 0 and col_name in exact_match.columns:
             population = exact_match[col_name].iloc[0]
             # 이미 숫자 형식이므로 추가 변환 불필요
             return int(population)
-        
+
         # 데이터가 없을 경우 기본값 반환
-        print(f"  [경고] {region_name}의 청년 인구 데이터를 찾을 수 없어 기본값을 사용합니다.")
+        print(
+            f"  [경고] {region_name}의 청년 인구 데이터를 찾을 수 없어 기본값을 사용합니다."
+        )
         return 200000 if self.is_metropolitan_area(region_name) else 10000
 
     def get_total_population(self, region_name):
         """특정 지역의 전체 인구수(절대값)를 조회합니다."""
-        col_name = "전체인구" # 제공해주신 컬럼명으로 수정
-        exact_match = self.youth_population_data[self.youth_population_data["지자체명"] == region_name]
+        col_name = "전체인구"  # 제공해주신 컬럼명으로 수정
+        exact_match = self.youth_population_data[
+            self.youth_population_data["지자체명"] == region_name
+        ]
         if len(exact_match) > 0 and col_name in exact_match.columns:
             population = exact_match[col_name].iloc[0]
             return int(population)
 
         # 데이터가 없을 경우 기본값 반환
-        print(f"  [경고] {region_name}의 전체 인구 데이터를 찾을 수 없어 기본값을 사용합니다.")
+        print(
+            f"  [경고] {region_name}의 전체 인구 데이터를 찾을 수 없어 기본값을 사용합니다."
+        )
         return 1000000 if self.is_metropolitan_area(region_name) else 50000
 
     def calculate_youth_policy_budget(self, region_name):
@@ -252,13 +259,21 @@ class YouthPolicyEvaluationSystemV2:
         total_population = self.get_total_population(region_name)
         finance_autonomy = self.get_finance_autonomy(region_name)
 
-        budget_per_youth = youth_policy_budget / youth_population if youth_population > 0 else 0
-        budget_per_capita = total_budget / total_population if total_population > 0 else 0
-    
-        concentration_index = budget_per_youth / budget_per_capita if budget_per_capita > 0 else 0
-        
+        budget_per_youth = (
+            youth_policy_budget / youth_population if youth_population > 0 else 0
+        )
+        budget_per_capita = (
+            total_budget / total_population if total_population > 0 else 0
+        )
+
+        concentration_index = (
+            budget_per_youth / budget_per_capita if budget_per_capita > 0 else 0
+        )
+
         if finance_autonomy > 0:
-            administrative_intensity = math.log(concentration_index / finance_autonomy + 1)
+            administrative_intensity = math.log(
+                concentration_index / finance_autonomy + 1
+            )
         else:
             administrative_intensity = math.log(concentration_index + 1)
 
@@ -285,13 +300,13 @@ class YouthPolicyEvaluationSystemV2:
         # ▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼
         # 1. 기본 평가 방식 선택 ('percentile' 또는 'z_score')
         # method = 'percentile'
-        method = 'z_score'
-        
+        method = "z_score"
+
         # 2. 페널티 완화 방식 선택 ('sigmoid', 'root', 또는 'none')
-        scaling_method = 'sigmoid'
+        scaling_method = "sigmoid"
         # scaling_method = 'root'
         # scaling_method = 'none'
-        
+
         # 3. 페널티 완화 강도 조절
         SIGMOID_K = 5
         ROOT_N = 2
@@ -299,94 +314,123 @@ class YouthPolicyEvaluationSystemV2:
         # ======================================================================
         policy_categories = ["일자리", "주거", "교육", "복지·문화", "참여·권리"]
 
-        if not hasattr(self, '_category_stats_df'):
+        if not hasattr(self, "_category_stats_df"):
             print("\n[최초 실행] 모든 지역의 영역별 정책 수를 계산하고 캐싱합니다...")
             all_regions_data = []
             for name, data in self.policy_data.items():
-                region_row = {'region_name': name, 'is_metro': self.is_metropolitan_area(name)}
+                region_row = {
+                    "region_name": name,
+                    "is_metro": self.is_metropolitan_area(name),
+                }
                 policy_execution = data.get("정책수행", {})
                 for category in policy_categories:
                     count = 0
                     category_data = policy_execution.get(category, {})
                     if isinstance(category_data, dict):
-                        if "사업수" in category_data and isinstance(category_data["사업수"], (int, float)) and category_data["사업수"] > 0:
+                        if (
+                            "사업수" in category_data
+                            and isinstance(category_data["사업수"], (int, float))
+                            and category_data["사업수"] > 0
+                        ):
                             count = int(category_data["사업수"])
-                        elif "세부사업" in category_data and isinstance(category_data.get("세부사업"), list):
+                        elif "세부사업" in category_data and isinstance(
+                            category_data.get("세부사업"), list
+                        ):
                             count = len(category_data["세부사업"])
-                    region_row[f'{category}_정책수'] = count
+                    region_row[f"{category}_정책수"] = count
                 all_regions_data.append(region_row)
             self._category_stats_df = pd.DataFrame(all_regions_data)
             print("✓ 영역별 데이터 캐싱 완료.")
 
         stats_df = self._category_stats_df
         try:
-            current_region_data = stats_df.loc[stats_df['region_name'] == region_name].iloc[0]
+            current_region_data = stats_df.loc[
+                stats_df["region_name"] == region_name
+            ].iloc[0]
         except IndexError:
             result = {"전략적_강도": 0, "엔트로피": 0, "정규화_엔트로피": 0}
-            for cat in policy_categories: result[f'{cat}_점수'], result[f'{cat}_정책수'] = 0, 0
+            for cat in policy_categories:
+                result[f"{cat}_점수"], result[f"{cat}_정책수"] = 0, 0
             return result
 
         # [핵심 수정] 외부에서 지정한 평가 그룹을 우선적으로 사용
-        if override_region_type == 'metro':
+        if override_region_type == "metro":
             is_metro = True
-        elif override_region_type == 'basic':
+        elif override_region_type == "basic":
             is_metro = False
         else:
             is_metro = self.is_metropolitan_area(region_name)
-        
-        group_df = stats_df[stats_df['is_metro'] == is_metro]
+
+        group_df = stats_df[stats_df["is_metro"] == is_metro]
 
         # 이하 점수 계산 로직은 제공해주신 코드와 완전히 동일하게 유지
         category_total_score = 0
         final_result = {}
         for category in policy_categories:
-            count_col, score_col = f'{category}_정책수', f'{category}_점수'
+            count_col, score_col = f"{category}_정책수", f"{category}_점수"
             current_value = current_region_data[count_col]
             distribution = group_df[count_col]
-            
+
             raw_score = 0.0
-            if method == 'percentile':
+            if method == "percentile":
                 sorted_dist = np.sort(distribution.values)
-                if len(sorted_dist) > 0: raw_score = np.searchsorted(sorted_dist, current_value, side='right') / len(sorted_dist)
-            elif method == 'z_score':
+                if len(sorted_dist) > 0:
+                    raw_score = np.searchsorted(
+                        sorted_dist, current_value, side="right"
+                    ) / len(sorted_dist)
+            elif method == "z_score":
                 mean, std = distribution.mean(), distribution.std()
-                if std > 0: raw_score = stats.norm.cdf((current_value - mean) / std)
-                elif len(distribution) > 0: raw_score = 0.5
-            
+                if std > 0:
+                    raw_score = stats.norm.cdf((current_value - mean) / std)
+                elif len(distribution) > 0:
+                    raw_score = 0.5
+
             scaled_score = raw_score
-            if scaling_method == 'sigmoid':
+            if scaling_method == "sigmoid":
                 scaled_score = 1 / (1 + math.exp(-SIGMOID_K * (raw_score - 0.5)))
-            elif scaling_method == 'root':
-                scaled_score = raw_score ** (1/ROOT_N)
+            elif scaling_method == "root":
+                scaled_score = raw_score ** (1 / ROOT_N)
 
             final_result[score_col] = scaled_score
             final_result[count_col] = current_value
             category_total_score += scaled_score
 
-        policy_counts = {cat: final_result[f'{cat}_정책수'] for cat in policy_categories}
+        policy_counts = {
+            cat: final_result[f"{cat}_정책수"] for cat in policy_categories
+        }
         total_policies = sum(policy_counts.values())
         entropy = 0.0
         active_categories = sum(1 for c in policy_counts.values() if c > 0)
         if total_policies > 0:
             for count in policy_counts.values():
-                if count > 0: entropy -= (count / total_policies) * math.log2(count / total_policies)
-        
+                if count > 0:
+                    entropy -= (count / total_policies) * math.log2(
+                        count / total_policies
+                    )
+
         entropy_score = 0.0
         if active_categories > 1:
             max_entropy = math.log2(active_categories)
-            if max_entropy > 0: entropy_score = entropy / max_entropy
+            if max_entropy > 0:
+                entropy_score = entropy / max_entropy
 
         strategic_intensity = category_total_score + entropy_score
-        
-        final_result.update({ "전략적_강도": strategic_intensity, "엔트로피": entropy, "정규화_엔트로피": entropy_score })
+
+        final_result.update(
+            {
+                "전략적_강도": strategic_intensity,
+                "엔트로피": entropy,
+                "정규화_엔트로피": entropy_score,
+            }
+        )
         return final_result
 
     def evaluate_all_regions(self):
-        
+
         print("\n=== 전국 청년정책 평가 시작 ===")
         results = []
         special_dual_role_regions = {"제주특별자치도", "세종특별자치시"}
-        
+
         if self.policy_data:
             _ = self.calculate_strategic_intensity(list(self.policy_data.keys())[0])
 
@@ -394,35 +438,48 @@ class YouthPolicyEvaluationSystemV2:
             print(f"평가 중: {region_name}")
 
             if region_name in special_dual_role_regions:
-                print(f"  -> 특별자치시/도({region_name}) 감지. 광역/기초 이중 평가를 수행합니다.")
-                
+                print(
+                    f"  -> 특별자치시/도({region_name}) 감지. 광역/기초 이중 평가를 수행합니다."
+                )
+
                 admin_result = self.calculate_administrative_intensity(region_name)
-                
+
                 # (1) 광역으로서 평가
-                strategic_metro = self.calculate_strategic_intensity(region_name, override_region_type='metro')
+                strategic_metro = self.calculate_strategic_intensity(
+                    region_name, override_region_type="metro"
+                )
                 result_metro = {
-                    "지역명": region_name, "지역유형": "광역자치단체",
-                    **admin_result,      # admin_result의 모든 내용을 여기에 복사
-                    **strategic_metro,   # strategic_metro의 모든 내용을 여기에 복사
+                    "지역명": region_name,
+                    "지역유형": "광역자치단체",
+                    **admin_result,  # admin_result의 모든 내용을 여기에 복사
+                    **strategic_metro,  # strategic_metro의 모든 내용을 여기에 복사
                 }
                 results.append(result_metro)
-                
+
                 # (2) 기초로서 평가
-                strategic_basic = self.calculate_strategic_intensity(region_name, override_region_type='basic')
+                strategic_basic = self.calculate_strategic_intensity(
+                    region_name, override_region_type="basic"
+                )
                 result_basic = {
-                    "지역명": region_name, "지역유형": "기초자치단체",
-                    **admin_result,      # 행정적 강도 결과는 동일하게 사용
+                    "지역명": region_name,
+                    "지역유형": "기초자치단체",
+                    **admin_result,  # 행정적 강도 결과는 동일하게 사용
                     **strategic_basic,
                 }
                 results.append(result_basic)
 
-            else: # 일반 지역의 경우
+            else:  # 일반 지역의 경우
                 admin_result = self.calculate_administrative_intensity(region_name)
                 strategic_result = self.calculate_strategic_intensity(region_name)
-                region_type = ("광역자치단체" if self.is_metropolitan_area(region_name) else "기초자치단체")
-                
+                region_type = (
+                    "광역자치단체"
+                    if self.is_metropolitan_area(region_name)
+                    else "기초자치단체"
+                )
+
                 result = {
-                    "지역명": region_name, "지역유형": region_type,
+                    "지역명": region_name,
+                    "지역유형": region_type,
                     **admin_result,
                     **strategic_result,
                 }
@@ -430,6 +487,7 @@ class YouthPolicyEvaluationSystemV2:
 
         print("\n✅ 모든 지역 평가 완료")
         return results
+
     def calculate_comprehensive_scores(self, results):
         """종합점수를 계산합니다."""
         df = pd.DataFrame(results)
@@ -515,21 +573,23 @@ class YouthPolicyEvaluationSystemV2:
         # ======================================================================
         # 1. 기존 로직: 광역/기초 분리하여 각각 파일로 저장 (유지)
         # ======================================================================
-        metro_df = df[df['지역유형'] == '광역자치단체'].copy()
-        basic_df = df[df['지역유형'] == '기초자치단체'].copy()
+        metro_df = df[df["지역유형"] == "광역자치단체"].copy()
+        basic_df = df[df["지역유형"] == "기초자치단체"].copy()
         print(f"\n결과 분리 중: 광역 {len(metro_df)}개, 기초 {len(basic_df)}개")
 
-        base_output_path = self.base_path / "policy_evaluation/evaluation_results_index/evaluation-3"
+        base_output_path = (
+            self.base_path / "policy_evaluation/evaluation_results_index/evaluation-3"
+        )
         base_output_path.mkdir(parents=True, exist_ok=True)
 
         metro_csv_file = base_output_path / "광역_청년정책_종합평가결과.csv"
         basic_csv_file = base_output_path / "기초_청년정책_종합평가결과.csv"
 
         if not metro_df.empty:
-            metro_df.to_csv(metro_csv_file, index=False, encoding='utf-8-sig')
+            metro_df.to_csv(metro_csv_file, index=False, encoding="utf-8-sig")
         if not basic_df.empty:
-            basic_df.to_csv(basic_csv_file, index=False, encoding='utf-8-sig')
-            
+            basic_df.to_csv(basic_csv_file, index=False, encoding="utf-8-sig")
+
         print(f"\n✅ 1차 개별 평가 결과 저장 완료:")
         print(f"   [광역] {metro_csv_file}")
         print(f"   [기초] {basic_csv_file}")
@@ -541,7 +601,7 @@ class YouthPolicyEvaluationSystemV2:
 
         # (2-1) 광역 점수 조회용 맵 생성
         #       여기서의 '종합점수'는 광역/기초가 모두 포함된 전체 데이터에서 정규화된 점수입니다.
-        metro_scores_map = metro_df.set_index('지역명')['종합점수']
+        metro_scores_map = metro_df.set_index("지역명")["종합점수"]
 
         # (2-2) 기초 데이터프레임에 소속 광역 매핑
         def get_metro_region(basic_region_name):
@@ -549,45 +609,67 @@ class YouthPolicyEvaluationSystemV2:
             for metro_name in self.metropolitan_areas:
                 if basic_region_name.startswith(metro_name[:2]):
                     # "경상", "전라", "충청" 이름 충돌 방지
-                    if metro_name.endswith("남도") and "북도" in basic_region_name: continue
-                    if metro_name.endswith("북도") and "남도" in basic_region_name: continue
+                    if metro_name.endswith("남도") and "북도" in basic_region_name:
+                        continue
+                    if metro_name.endswith("북도") and "남도" in basic_region_name:
+                        continue
                     return metro_name
             return None
 
-        basic_df['소속_광역'] = basic_df['지역명'].apply(get_metro_region)
-        
+        basic_df["소속_광역"] = basic_df["지역명"].apply(get_metro_region)
+
         # 제주/세종은 소속 광역이 자기 자신
-        basic_df.loc[basic_df['지역명'] == '세종특별자치시', '소속_광역'] = '세종특별자치시'
-        basic_df.loc[basic_df['지역명'] == '제주특별자치도', '소속_광역'] = '제주특별자치도'
-        
+        basic_df.loc[basic_df["지역명"] == "세종특별자치시", "소속_광역"] = (
+            "세종특별자치시"
+        )
+        basic_df.loc[basic_df["지역명"] == "제주특별자치도", "소속_광역"] = (
+            "제주특별자치도"
+        )
+
         # (2-3) 소속 광역의 점수를 기초 데이터프레임에 추가
-        basic_df['광역_종합점수'] = basic_df['소속_광역'].map(metro_scores_map).fillna(0)
+        basic_df["광역_종합점수"] = (
+            basic_df["소속_광역"].map(metro_scores_map).fillna(0)
+        )
 
         # (2-4) 최종 연계 점수 계산 (가중 평균)
         basic_weight = 0.7  # 기초 자체 노력 가중치
         metro_weight = 0.3  # 광역 지원 노력 가중치
-        
+
         # '종합점수'는 basic_df의 개별 종합점수를 의미
-        basic_df['최종_연계점수'] = (basic_df['종합점수'] * basic_weight) + (basic_df['광역_종합점수'] * metro_weight)
-        
+        basic_df["최종_연계점수"] = (basic_df["종합점수"] * basic_weight) + (
+            basic_df["광역_종합점수"] * metro_weight
+        )
+
         # (2-5) 최종 순위 매기기 및 컬럼 정리
-        final_linked_df = basic_df.sort_values("최종_연계점수", ascending=False).reset_index(drop=True)
+        final_linked_df = basic_df.sort_values(
+            "최종_연계점수", ascending=False
+        ).reset_index(drop=True)
         final_linked_df["최종순위"] = final_linked_df.index + 1
 
         output_columns = [
-            '최종순위', '지역명', '소속_광역', '최종_연계점수', '종합점수', '광역_종합점수',
-            '행정적_강도', '전략적_강도', '재정자립도', '청년1인당_정책예산_원'
+            "최종순위",
+            "지역명",
+            "소속_광역",
+            "최종_연계점수",
+            "종합점수",
+            "광역_종합점수",
+            "행정적_강도",
+            "전략적_강도",
+            "재정자립도",
+            "청년1인당_정책예산_원",
         ]
         # 없는 컬럼이 있어도 오류나지 않도록 처리
-        final_linked_df = final_linked_df[[col for col in output_columns if col in final_linked_df.columns]]
+        final_linked_df = final_linked_df[
+            [col for col in output_columns if col in final_linked_df.columns]
+        ]
 
         # (2-6) 최종 연계 분석 결과 파일 저장
         linked_csv_file = base_output_path / "기초_최종평가결과(광역연계).csv"
-        final_linked_df.to_csv(linked_csv_file, index=False, encoding='utf-8-sig')
+        final_linked_df.to_csv(linked_csv_file, index=False, encoding="utf-8-sig")
 
         print(f"\n✅ 2차 연계 평가 결과 저장 완료:")
         print(f"   [연계] {linked_csv_file}")
-        
+
         # 이전 버전과의 호환성을 위해 기존 파일 경로 반환
         return metro_csv_file, None, basic_csv_file, None
 
