@@ -17,7 +17,7 @@ class YouthPolicyEvaluationSystemV2:
 
         # 광역자치단체 목록 정의
         self.metropolitan_areas = {
-            "강원특별자치도",
+            "강원도",
             "경기도",
             "경상남도",
             "경상북도",

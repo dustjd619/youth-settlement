@@ -632,8 +632,8 @@ class YouthPolicyEvaluationSystemV2:
         )
 
         # (2-4) 최종 연계 점수 계산 (가중 평균)
-        basic_weight = 0.7  # 기초 자체 노력 가중치
-        metro_weight = 0.3  # 광역 지원 노력 가중치
+        basic_weight = 0.5  # 기초 자체 노력 가중치
+        metro_weight = 0.5  # 광역 지원 노력 가중치
 
         # '종합점수'는 basic_df의 개별 종합점수를 의미
         basic_df["최종_연계점수"] = (basic_df["종합점수"] * basic_weight) + (
