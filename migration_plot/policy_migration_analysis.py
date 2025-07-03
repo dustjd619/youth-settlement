@@ -48,12 +48,14 @@ class PolicyLagAnalyzer:
         """정책 데이터와 마이그레이션 데이터 로드"""
         # 광역자치단체 정책 데이터 로드
         metropolitan_policy_file = (
-            self.base_path / "data/policy_eval/광역_청년정책_종합평가결과.csv"
+            self.base_path
+            / "data/policy_eval/eval-5_result/광역_청년정책_종합평가결과.csv"
         )
 
         # 기초자치단체 정책 데이터 로드
         municipal_policy_file = (
-            self.base_path / "data/policy_eval/기초_청년정책_종합평가결과.csv"
+            self.base_path
+            / "data/policy_eval/eval-5_result/기초_청년정책_종합평가결과.csv"
         )
 
         policy_data_list = []
@@ -354,7 +356,8 @@ class PolicyLagAnalyzer:
 
             # 결과 CSV로 저장
             save_path = (
-                self.base_path / "migration_plot/settlement_induction_result.csv"
+                self.base_path
+                / "migration_plot/eval-5_result/settlement_induction_result.csv"
             )
             self.merged_data.to_csv(save_path, index=False, encoding="utf-8-sig")
             print(f"✅ 통합 결과 CSV 저장 완료: {save_path}")
@@ -484,7 +487,8 @@ class PolicyLagAnalyzer:
                 )
                 plt.tight_layout()
                 plt.savefig(
-                    self.base_path / "migration_plot/policy_lag_correlation.png",
+                    self.base_path
+                    / "migration_plot/eval-5_result/policy_lag_correlation.png",
                     dpi=300,
                     bbox_inches="tight",
                 )
@@ -790,7 +794,10 @@ class PolicyLagAnalyzer:
             plt.tight_layout()
 
             # 저장
-            save_path = self.base_path / "migration_plot/settlement_induction_plot.png"
+            save_path = (
+                self.base_path
+                / "migration_plot/eval-5_result/settlement_induction_plot.png"
+            )
             plt.savefig(save_path, dpi=300, bbox_inches="tight")
             plt.show()
 
@@ -889,8 +896,11 @@ class PolicyLagAnalyzer:
             "전략적_강도" in self.merged_data.columns
             and "전입" in self.merged_data.columns
         ):
-            valid_data = self.merged_data[["전략적_강도", "전입"]].dropna()
+            valid_data = self.merged_data[
+                ["전략적_강도", "전입", "지역명_정책"]
+            ].dropna()
 
+            # 산점도 그리기
             axes[0, 1].scatter(
                 valid_data["전략적_강도"],
                 valid_data["전입"],
@@ -898,6 +908,27 @@ class PolicyLagAnalyzer:
                 s=60,
                 c="forestgreen",
             )
+
+            # 전입 기준 상위/하위 5개 지역 라벨링
+            sorted_data = valid_data.sort_values("전입", ascending=False)
+            top5 = sorted_data.head(5)
+            bottom5 = sorted_data.tail(5)
+
+            for _, row in pd.concat([top5, bottom5]).iterrows():
+                axes[0, 1].annotate(
+                    row["지역명_정책"],
+                    (row["전략적_강도"], row["전입"]),
+                    xytext=(5, 5),
+                    textcoords="offset points",
+                    fontsize=8,
+                    bbox=dict(
+                        facecolor="white",
+                        edgecolor="forestgreen",
+                        alpha=0.7,
+                        boxstyle="round,pad=0.5",
+                    ),
+                )
+
             axes[0, 1].set_xlabel("정책 전략적 강도")
             axes[0, 1].set_ylabel("청년 전입")
             axes[0, 1].set_title("정책 전략적 강도 vs 청년 전입")
@@ -948,7 +979,7 @@ class PolicyLagAnalyzer:
         plt.suptitle("정책 시차를 고려한 청년 이동 패턴 분석", fontsize=16, y=0.98)
         plt.tight_layout()
         plt.savefig(
-            self.base_path / "migration_plot/policy_lag_analysis.png",
+            self.base_path / "migration_plot/eval-5_result/policy_lag_analysis.png",
             dpi=300,
             bbox_inches="tight",
         )
